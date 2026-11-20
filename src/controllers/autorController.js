@@ -1,22 +1,22 @@
 import { autor } from "../models/Autor.js";
 
 class AutorController {
-  static async listarAutores(req, res) {
+  static listarAutores = async (req, res) => {
     try {
-      const listaAutores = await autor.find({});
-      res.status(200).json(listaAutores);
+      const autoresResultado = await autor.find({});
+      res.status(200).json(autoresResultado);
     } catch (err) {
       res
         .status(500)
         .json({ message: `${err.message} - falha ao listar autores` });
     }
-  }
+  };
 
-  static async listarAutorPorId(req, res) {
+  static listarAutorPorId = async (req, res) => {
     try {
       const id = req.params.id;
-      const listaAutorEncontrado = await autor.findById(id);
-      res.status(200).json(listaAutorEncontrado);
+      const autorResultado = await autor.findById(id);
+      res.status(200).json(autorResultado);
     } catch (err) {
       res
         .status(500)
@@ -24,10 +24,12 @@ class AutorController {
     }
   }
 
-  static async cadastrarAutor(req, res) {
+  static cadastrarAutor = async (req, res) => {
     try {
       const novoAutor = await autor.create(req.body);
-      res.status(201).json({ message: "autor criado com sucesso", autor: novoAutor });
+      res
+        .status(201)
+        .json({ message: "autor criado com sucesso", autor: novoAutor });
     } catch (err) {
       res
         .status(500)
@@ -35,7 +37,7 @@ class AutorController {
     }
   }
 
-  static async atualizarAutor(req, res) {
+  static atualizarAutor = async (req, res) => {
     try {
       const id = req.params.id;
       await autor.findByIdAndUpdate(id, req.body);
@@ -47,7 +49,7 @@ class AutorController {
     }
   }
 
-  static async excluirAutor(req, res) {
+  static excluirAutor = async (req, res) => {
     try {
       const id = req.params.id;
       await autor.findByIdAndDelete(id);
