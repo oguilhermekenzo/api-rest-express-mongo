@@ -1,13 +1,19 @@
 /* eslint-disable no-unused-vars */
 import mongoose from "mongoose";
+import ErroBase from "../erros/erroBase.js";
+import RequesicaoIncorreta from "../erros/RequisicaoIncorreta.js";
+import ErroValidacao from "../erros/ErroValidacao.js";
+import NaoEncontrado from "../erros/NaoEncontrado.js";
 
 function manipuladorDeErros(err, req, res, next) {
   if (err instanceof mongoose.Error.CastError) {
-    res.status(400).send({ message: "ID inválido" });
+    new RequesicaoIncorreta().enviarResposta(res);
+  } else if (err instanceof mongoose.Error.ValidationError) {
+    new ErroValidacao(err).enviarResposta(res);
+  } else if (err instanceof NaoEncontrado) {
+    err.enviarResposta(res);
   } else {
-    res
-      .status(500)
-      .send({ message: `Erro interno de servidor: ${err.message}` });
+    new ErroBase().enviarResposta(res);
   }
 }
 
