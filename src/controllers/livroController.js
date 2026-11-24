@@ -1,11 +1,14 @@
 import livro from "../models/Livro.js";
-import { autores } from "../models/Autor.js";
+import { autores } from "../models/index.js";
 
 class LivroController {
   static async listarLivros(req, res, next) {
     try {
-      const listaLivros = await livro.find({});
-      res.status(200).json(listaLivros);
+      const buscaLivros = livro.find();
+
+      req.resultado = buscaLivros;
+
+      next();
     } catch (err) {
       next(err);
     }
@@ -58,15 +61,58 @@ class LivroController {
     }
   }
 
-  static async listarLivrosPorEditora(req, res, next) {
-    const editora = req.query.editora;
+  static async listarLivrosPorFiltro(req, res, next) {
     try {
-      const listaLivros = await livro.find({ editora: editora });
-      res.status(200).json(listaLivros);
+      const busca = await processaBusca(req.query);
+
+      if (busca !== null) {
+        const listaLivros = livro.find(busca).populate("autor");
+
+        req.resultado = listaLivros;
+
+        next();
+      } else {
+        res.status(200).json([]);
+      }
     } catch (err) {
       next(err);
     }
   }
+}
+
+async function processaBusca(params) {
+  const { editora, titulo, minPag, maxPag, nomeAutor } = params;
+
+  let busca = {};
+
+  if (editora) {
+    busca.editora = editora;
+  }
+
+  if (titulo) {
+    busca.titulo = { $regex: titulo, $options: "i" };
+  }
+
+  if (minPag || maxPag) {
+    busca.paginas = {};
+    if (minPag) {
+      busca.paginas.$gte = Number(minPag);
+    }
+    if (maxPag) {
+      busca.paginas.$lte = Number(maxPag);
+    }
+  }
+
+  if (nomeAutor) {
+    const autor = await autores.findOne({ nome: nomeAutor });
+
+    if (autor !== null) {
+      busca.autor = autor._id;
+    } else {
+      busca = null;
+    }
+  }
+  return busca;
 }
 
 export default LivroController;
